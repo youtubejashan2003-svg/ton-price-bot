@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import (
-ApplicationBuilder,
-CommandHandler,
-ContextTypes,
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes,
 )
 import requests
 import asyncio
@@ -11,87 +11,102 @@ TOKEN = "8687375975:AAFGPyRcPInn3NhuSWf3zTybPkynn7QLEmQ"
 
 CHANNEL_ID = "@tonnprice"
 
+OWNER_ID = 8715707181
+
 interval = 60
 running = False
 
+
 async def get_ton_price():
-url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
 
-data = requests.get(url).json()
+    data = requests.get(url).json()
 
-return float(data["the-open-network"]["usd"])
+    return float(data["the-open-network"]["usd"])
+
 
 async def auto_price(app):
-global running
-global interval
+    global running
+    global interval
 
-while running:
-    try:
-        price = await get_ton_price()
+    while running:
+        try:
+            price = await get_ton_price()
 
-        text = f"{price:.2f}$"
+            text = f"<b>{price:.2f}$</b>"
 
-        await app.bot.send_message(
-            chat_id=CHANNEL_ID,
-            text=text
-        )
+            await app.bot.send_message(
+                chat_id=CHANNEL_ID,
+                text=text,
+                parse_mode="HTML"
+            )
 
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
 
-    await asyncio.sleep(interval)
+        await asyncio.sleep(interval)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-await update.message.reply_text(
-"💎 Welcome To TON Price Bot\n\n"
-"This bot provides live TON price updates.\n\n"
-"Commands:\n"
-"/run\n"
-"/price\n"
-"/settime 60\n\n"
-"Join For Live Updates:\n"
-"@tonnprice\n\n"
-"👨‍💻 Developer: @tumlu"
-)
+    await update.message.reply_text(
+        "💎 Welcome To TON Price Bot\n\n"
+        "This bot provides live TON price updates.\n\n"
+        "Commands:\n"
+        "/price\n\n"
+        "Join For Live Updates:\n"
+        "@tonnprice\n\n"
+        "👨‍💻 Developer: @tumlu"
+    )
+
 
 async def run(update: Update, context: ContextTypes.DEFAULT_TYPE):
-global running
+    global running
 
-if running:
-    await update.message.reply_text("Already Running")
-    return
+    if update.effective_user.id != OWNER_ID:
+        return
 
-running = True
+    if running:
+        await update.message.reply_text("Already Running ✅")
+        return
 
-context.application.create_task(
-    auto_price(context.application)
-)
+    running = True
 
-await update.message.reply_text("Started ✅")
+    context.application.create_task(
+        auto_price(context.application)
+    )
+
+    await update.message.reply_text("Started ✅")
+
 
 async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
-global interval
+    global interval
 
-try:
-    sec = int(context.args[0])
+    if update.effective_user.id != OWNER_ID:
+        return
 
-    interval = sec
+    try:
+        sec = int(context.args[0])
 
-    await update.message.reply_text(
-        f"Time Set To {sec} sec ✅"
-    )
+        interval = sec
 
-except:
-    await update.message.reply_text(
-        "Use:\n/settime 60"
-    )
+        await update.message.reply_text(
+            f"Time Set To {sec} sec ✅"
+        )
+
+    except:
+        await update.message.reply_text(
+            "Use:\n/settime 60"
+        )
+
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-price = await get_ton_price()
+    ton_price = await get_ton_price()
 
-await update.message.reply_text(
-    f"{price:.2f}$"
-)
+    await update.message.reply_text(
+        f"<b>{ton_price:.2f}$</b>",
+        parse_mode="HTML"
+    )
+
 
 app = ApplicationBuilder().token(TOKEN).build()
 

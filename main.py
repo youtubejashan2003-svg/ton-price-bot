@@ -18,11 +18,18 @@ running = False
 
 
 async def get_ton_price():
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
+    try:
+        url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
 
-    data = requests.get(url).json()
+        response = requests.get(url).json()
 
-    return float(data["the-open-network"]["usd"])
+        price = response["the-open-network"]["usd"]
+
+        return float(price)
+
+    except Exception as e:
+        print("Price Error:", e)
+        return 0.00
 
 
 async def auto_price(app):
@@ -33,12 +40,11 @@ async def auto_price(app):
         try:
             price = await get_ton_price()
 
-            text = f"<b>{price:.2f}$</b>"
+            text = f"{price:.2f}$"
 
             await app.bot.send_message(
                 chat_id=CHANNEL_ID,
-                text=text,
-                parse_mode="HTML"
+                text=text
             )
 
             print("Message Sent")
@@ -105,8 +111,7 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ton_price = await get_ton_price()
 
     await update.message.reply_text(
-        f"<b>{ton_price:.2f}$</b>",
-        parse_mode="HTML"
+        f"{ton_price:.2f}$"
     )
 
 

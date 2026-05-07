@@ -19,15 +19,17 @@ running = False
 
 async def get_ton_price():
     try:
-        url = "https://api.binance.com/api/v3/ticker/price?symbol=TONUSDT"
+        url = "https://api.bybit.com/v5/market/tickers?category=spot&symbol=TONUSDT"
 
         response = requests.get(url).json()
 
-        return float(response["price"])
+        price = response["result"]["list"][0]["lastPrice"]
+
+        return float(price)
 
     except Exception as e:
         print("Price Error:", e)
-        return 0.00
+        return 0
 
 
 async def auto_price(app):
@@ -39,7 +41,7 @@ async def auto_price(app):
             price = await get_ton_price()
 
             text = (
-                f"{price:.2f}$\n"
+                f"{price:.2f}$\n\n"
                 f"Join for live update @tonnprice"
             )
 
@@ -59,8 +61,20 @@ async def auto_price(app):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "💎 Welcome To TON Price Bot\n\n"
-        "Commands:\n"
-        "/price"
+        "Use Command:\n"
+        "/price\n\n"
+        "Join for live update @tonnprice\n\n"
+        "Developer @tumlu"
+    )
+
+
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    ton_price = await get_ton_price()
+
+    await update.message.reply_text(
+        f"{ton_price:.2f}$\n\n"
+        f"Join for live update @tonnprice"
     )
 
 
@@ -71,7 +85,7 @@ async def run(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if running:
-        await update.message.reply_text("Already Running ✅")
+        await update.message.reply_text("Already Running")
         return
 
     running = True
@@ -95,7 +109,7 @@ async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         interval = sec
 
         await update.message.reply_text(
-            f"Time Set To {sec} sec ✅"
+            f"Time Set To {sec} sec"
         )
 
     except:
@@ -104,36 +118,13 @@ async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    ton_price = await get_ton_price()
-
-    await update.message.reply_text(
-        f"{ton_price:.2f}$\n"
-        f"Join for live update @tonnprice"
-    )
-
-
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    if update.effective_user.id != OWNER_ID:
-        return
-
-    await context.bot.send_message(
-        chat_id=CHANNEL_ID,
-        text="TEST MESSAGE ✅"
-    )
-
-    await update.message.reply_text("Sent ✅")
-
-
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("price", price))
 app.add_handler(CommandHandler("run", run))
 app.add_handler(CommandHandler("settime", settime))
-app.add_handler(CommandHandler("price", price))
-app.add_handler(CommandHandler("test", test))
 
 print("Bot Running...")
 
-app.run_polling() 
+app.run_polling()

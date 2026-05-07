@@ -29,7 +29,7 @@ while running:
     try:
         price = await get_ton_price()
 
-        text = f"${price}"
+        text = f"{price:.2f}$"
 
         await app.bot.send_message(
             chat_id=CHANNEL_ID,
@@ -44,8 +44,11 @@ while running:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 await update.message.reply_text(
 "💎 Welcome To TON Price Bot\n\n"
-"This bot provides live TON price updates in dollars.\n\n"
-"Use /price to check current TON price.\n\n"
+"This bot provides live TON price updates.\n\n"
+"Commands:\n"
+"/run\n"
+"/price\n"
+"/settime 60\n\n"
 "Join For Live Updates:\n"
 "@tonnprice\n\n"
 "👨‍💻 Developer: @tumlu"
@@ -55,6 +58,7 @@ async def run(update: Update, context: ContextTypes.DEFAULT_TYPE):
 global running
 
 if running:
+    await update.message.reply_text("Already Running")
     return
 
 running = True
@@ -62,6 +66,8 @@ running = True
 context.application.create_task(
     auto_price(context.application)
 )
+
+await update.message.reply_text("Started ✅")
 
 async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
 global interval
@@ -71,14 +77,20 @@ try:
 
     interval = sec
 
+    await update.message.reply_text(
+        f"Time Set To {sec} sec ✅"
+    )
+
 except:
-    pass
+    await update.message.reply_text(
+        "Use:\n/settime 60"
+    )
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 price = await get_ton_price()
 
 await update.message.reply_text(
-    f"${price}"
+    f"{price:.2f}$"
 )
 
 app = ApplicationBuilder().token(TOKEN).build()

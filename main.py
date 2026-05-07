@@ -9,7 +9,7 @@ import asyncio
 
 TOKEN = "8687375975:AAFGPyRcPInn3NhuSWf3zTybPkynn7QLEmQ"
 
-CHANNEL_ID = "@tonnprice"
+CHANNEL_ID = "-1003775021632"
 
 OWNER_ID = 8715707181
 

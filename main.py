@@ -19,13 +19,11 @@ running = False
 
 async def get_ton_price():
     try:
-        url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
+        url = "https://api.binance.com/api/v3/ticker/price?symbol=TONUSDT"
 
         response = requests.get(url).json()
 
-        price = response["the-open-network"]["usd"]
-
-        return float(price)
+        return float(response["price"])
 
     except Exception as e:
         print("Price Error:", e)
@@ -40,14 +38,17 @@ async def auto_price(app):
         try:
             price = await get_ton_price()
 
-            text = f"{price:.2f}$"
+            text = (
+                f"{price:.2f}$\n"
+                f"Join for live update @tonnprice"
+            )
 
             await app.bot.send_message(
                 chat_id=CHANNEL_ID,
                 text=text
             )
 
-            print("Message Sent")
+            print("Live Price Sent")
 
         except Exception as e:
             print("Error:", e)
@@ -58,12 +59,8 @@ async def auto_price(app):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "💎 Welcome To TON Price Bot\n\n"
-        "This bot provides live TON price updates.\n\n"
         "Commands:\n"
-        "/price\n\n"
-        "Join For Live Updates:\n"
-        "@tonnprice\n\n"
-        "👨‍💻 Developer: @tumlu"
+        "/price"
     )
 
 
@@ -111,7 +108,8 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ton_price = await get_ton_price()
 
     await update.message.reply_text(
-        f"{ton_price:.2f}$"
+        f"{ton_price:.2f}$\n"
+        f"Join for live update @tonnprice"
     )
 
 
@@ -138,4 +136,4 @@ app.add_handler(CommandHandler("test", test))
 
 print("Bot Running...")
 
-app.run_polling()
+app.run_polling() 

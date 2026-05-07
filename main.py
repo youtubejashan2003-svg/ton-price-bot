@@ -19,16 +19,14 @@ running = False
 
 async def get_ton_price():
     try:
-        url = "https://api.bybit.com/v5/market/tickers?category=spot&symbol=TONUSDT"
+        url = "https://min-api.cryptocompare.com/data/price?fsym=TON&tsyms=USD"
 
         response = requests.get(url).json()
 
-        price = response["result"]["list"][0]["lastPrice"]
-
-        return float(price)
+        return float(response["USD"])
 
     except Exception as e:
-        print("Price Error:", e)
+        print(e)
         return 0
 
 
@@ -40,20 +38,15 @@ async def auto_price(app):
         try:
             price = await get_ton_price()
 
-            text = (
-                f"{price:.2f}$\n\n"
-                f"Join for live update @tonnprice"
-            )
-
             await app.bot.send_message(
                 chat_id=CHANNEL_ID,
-                text=text
+                text=f"{price:.2f}$"
             )
 
-            print("Live Price Sent")
+            print("Price Sent")
 
         except Exception as e:
-            print("Error:", e)
+            print("Send Error:", e)
 
         await asyncio.sleep(interval)
 
@@ -70,10 +63,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    ton_price = await get_ton_price()
+    price = await get_ton_price()
 
     await update.message.reply_text(
-        f"{ton_price:.2f}$\n\n"
+        f"{price:.2f}$\n\n"
         f"Join for live update @tonnprice"
     )
 
@@ -104,12 +97,10 @@ async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        sec = int(context.args[0])
-
-        interval = sec
+        interval = int(context.args[0])
 
         await update.message.reply_text(
-            f"Time Set To {sec} sec"
+            f"Time Set To {interval} sec"
         )
 
     except:

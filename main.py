@@ -9,7 +9,7 @@ import asyncio
 
 TOKEN = "8687375975:AAFGPyRcPInn3NhuSWf3zTybPkynn7QLEmQ"
 
-CHANNEL_ID = "-1003775021632"
+CHANNEL_ID = "@tonnprice"
 
 OWNER_ID = 8715707181
 
@@ -41,8 +41,10 @@ async def auto_price(app):
                 parse_mode="HTML"
             )
 
+            print("Message Sent")
+
         except Exception as e:
-            print(e)
+            print("Error:", e)
 
         await asyncio.sleep(interval)
 
@@ -108,12 +110,26 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.effective_user.id != OWNER_ID:
+        return
+
+    await context.bot.send_message(
+        chat_id=CHANNEL_ID,
+        text="TEST MESSAGE ✅"
+    )
+
+    await update.message.reply_text("Sent ✅")
+
+
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("run", run))
 app.add_handler(CommandHandler("settime", settime))
 app.add_handler(CommandHandler("price", price))
+app.add_handler(CommandHandler("test", test))
 
 print("Bot Running...")
 

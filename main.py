@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    ContextTypes,
+ApplicationBuilder,
+CommandHandler,
+ContextTypes,
 )
 import requests
 import asyncio
@@ -13,113 +13,73 @@ CHANNEL_ID = "@tonnprice"
 
 interval = 60
 running = False
-last_price = None
-
 
 async def get_ton_price():
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
+url = "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
 
-    data = requests.get(url).json()
+data = requests.get(url).json()
 
-    return float(data["the-open-network"]["usd"])
-
+return float(data["the-open-network"]["usd"])
 
 async def auto_price(app):
-    global running
-    global interval
-    global last_price
+global running
+global interval
 
-    while running:
-        try:
-            price = await get_ton_price()
+while running:
+    try:
+        price = await get_ton_price()
 
-            if last_price is None:
-                status = "START ⚪"
+        text = f"${price}"
 
-            elif price > last_price:
-                status = "UPPER 📈"
+        await app.bot.send_message(
+            chat_id=CHANNEL_ID,
+            text=text
+        )
 
-            elif price < last_price:
-                status = "DOWN 📉"
+    except Exception as e:
+        print(e)
 
-            else:
-                status = "SAME ⚪"
-
-            text = f"{price}$ [{status}]"
-
-            await app.bot.send_message(
-                chat_id=CHANNEL_ID,
-                text=text
-            )
-
-            last_price = price
-
-        except Exception as e:
-            print(e)
-
-        await asyncio.sleep(interval)
-
+    await asyncio.sleep(interval)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "💎 Welcome To TON Price Bot\n\n"
-        "This bot provides live TON price updates with market movement status.\n\n"
-        "📈 UPPER\n"
-        "📉 DOWN\n"
-        "⚪ SAME\n\n"
-        "Use /price to check current TON price.\n\n"
-        "Join For Live Updates:\n"
-        "@tonnprice\n\n"
-        "👨‍💻 Developer: @tumlu"
-    )
-
+await update.message.reply_text(
+"💎 Welcome To TON Price Bot\n\n"
+"This bot provides live TON price updates in dollars.\n\n"
+"Use /price to check current TON price.\n\n"
+"Join For Live Updates:\n"
+"@tonnprice\n\n"
+"👨‍💻 Developer: @tumlu"
+)
 
 async def run(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global running
+global running
 
-    if running:
-        return
+if running:
+    return
 
-    running = True
+running = True
 
-    context.application.create_task(
-        auto_price(context.application)
-    )
-
+context.application.create_task(
+    auto_price(context.application)
+)
 
 async def settime(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global interval
+global interval
 
-    try:
-        sec = int(context.args[0])
+try:
+    sec = int(context.args[0])
 
-        interval = sec
+    interval = sec
 
-    except:
-        pass
-
+except:
+    pass
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global last_price
+price = await get_ton_price()
 
-    price = await get_ton_price()
-
-    if last_price is None:
-        status = "START ⚪"
-
-    elif price > last_price:
-        status = "UPPER 📈"
-
-    elif price < last_price:
-        status = "DOWN 📉"
-
-    else:
-        status = "SAME ⚪"
-
-    await update.message.reply_text(
-        f"{price}$ [{status}]"
-    )
-
+await update.message.reply_text(
+    f"${price}"
+)
 
 app = ApplicationBuilder().token(TOKEN).build()
 
